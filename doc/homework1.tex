@@ -1,0 +1,163 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage{amsmath}
+\usepackage[margin=.75in]{geometry}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{appendix}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\floatstyle{ruled}
+\restylefloat{table}
+\restylefloat{figure}
+\newcommand{\floatintro}[1]{
+  \vspace*{0.1in}
+  {\footnotesize
+    #1
+    }
+  \vspace*{0.1in}
+}
+\newcommand{\Hline}{\noindent\rule{17cm}{0.5pt}}
+\title{Homework 1 : Computational Economics \\
+Search Models}
+\author{Dhananjay Ghei}
+\date{October 31, 2018}
+\begin{document}
+\maketitle
+\section*{Search Models and Labor Wedge}
+\begin{enumerate}
+\item First show that there exists an equilibrium in the following
+transformed variables: $\tilde{c}(s^t) =
+c(s^t)z(s^t)^{\frac{-1}{1-\alpha}}$, $\tilde{k}(s^t) =
+k(s^t)z(s^t)^{\frac{-1}{1-\alpha}}$ and $\tilde{w}(s^t) = w(s^t)
+z(s^t)^{\frac{-1}{1-\alpha}}$. Then show that there exists a Markovian
+solution with $k,n,s$ as state variables. Boil down the equations
+below to two functional equations in two unknown functions:
+$\theta(k,n,s)$ and $\tilde{c}(k,n,s)$. \\ \Hline \\
+Appendix \ref{appendix:a} gives the calculations for the equations
+derived below with the appropriate transformations.\\
+The Euler equation is given by:
+\begin{align*}
+  1 = \beta \sum_{s^{t+1}|s^t} \pi(s_{t+1}|s_t)
+  \frac{\tilde{c}(s^t)}{\tilde{c}(s^{t+1})}
+  e^{-\frac{s_{t+1}}{1-\alpha}} \bigg(\alpha \bigg(
+  \frac{\tilde{k}(s^{t+1})}{n(s^{t+1}) - \theta(s^{t+1})
+  (1-n(s^{t+1}))}\bigg)^{\alpha-1} + 1 - \delta \bigg)
+\end{align*}
+The condition w.r.t employment is given by:
+\begin{align*}
+  (1-\alpha) \bigg(\frac{\tilde{k}(s^t)}{n(s^t)-\theta(s^t)(1-n(s^t))}
+  \bigg)^{\alpha} = \beta \mu(\theta(s^t)) \sum_{s^{t+1}|s^t}
+  \pi(s_{t+1}|s_t)\\
+   \times \bigg( (1-\alpha) \bigg(\frac{\tilde{k}(s^{t+1})}{n(s^{t+1})
+  - \theta (s^{t+1}) (1-n(s^{t+1}))}\bigg)^{\alpha} \bigg(1 +
+  \frac{1-x}{\mu(\theta (s^{t+1}))} \bigg) - \tilde{w}(s^{t+1}) \bigg)
+\end{align*}
+The wage equation evaluated in history $s^{t+1}$ reduces to:
+\begin{align*}
+  (1-\tau) \tilde{w}(s^{t+1}) = (1-\phi) \gamma \tilde{c}(s^{t+1})
+  + \phi (1-\tau)(1-\alpha) \bigg(\frac{\tilde{k}(s^{t+1})}{n(s^{t+1})
+  - \theta (s^{t+1})(1-n(s^{t+1}))} \bigg)^{\alpha} (1+\theta(s^{t+1}))
+\end{align*}
+Eliminating wage $\tilde{w}(s^{t+1})$ between the last two equations
+gives:
+\begin{align*}
+  (1-\alpha) \bigg(\frac{\tilde{k}(s^t)}{n(s^t) -
+  \theta(s^t)(1-n(s^t))} \bigg)^{\alpha} = \beta \mu(\theta(s^t))
+  \sum_{s^{t+1}|s^t} \pi(s_{t+1}|s_t)
+  \frac{\tilde{c}(s^t)}{\tilde{c}(s^{t+1})}\\ \bigg(-
+  \frac{(1-\phi)\gamma \tilde{c}(s^{t+1})}{1-\tau} + (1-\alpha) \bigg(
+  \frac{\tilde{k}(s^{t+1})}{n(s^{t+1}) - \theta(s^{t+1})(1-n(s^{t+1}))}
+  \bigg)^{\alpha} \bigg(\frac{1-x}{\mu(\theta(s^{t+1}))} + 1 -\phi -
+  \phi \theta(s^{t+1}) \bigg)\bigg)
+\end{align*}
+The resource constraint is given by:
+\begin{align*}
+  \tilde{k}(s^{t+1}) e^{\frac{s_{t+1}}{1-\alpha}} =
+  (\tilde{k}(s^t))^{\alpha} (n(s^t) - \theta(s^t)(1-n(s^t)))^{1-\alpha}
+  + (1-\delta) \tilde{k}(s^t) -\tilde{c}(s^t)
+\end{align*}
+The law of motion for employment is given by:
+\begin{align*}
+  n(s^{t+1}) = (1-x) n(s^t) + f(\theta(s^t))(1-n(s^t))
+\end{align*}
+
+Finally, let the functions $\Theta$ and $C$ define the
+recruiter-employment ratio and equilibrium consumption relative to
+trend as functions of the current state $(s,n,\tilde{k})$ so,
+$\theta(s^t) = \Theta(s_t, n(s^t), \tilde{k}(s^t))$ and
+$\tilde{c}(s^t) = C(s_t, n(s^t), \tilde{k}(s^t))$. Substituting in the
+expressions and eliminating $\tilde{k}(s^{t+1})$ and $n(s^{t+1})$, we
+get two nonlinear equations in $\Theta$ and $C$. Appendix
+\ref{appendix:b} gives the calculations for this transformation. The
+functional equations are given as:
+
+\item Compute the non stochastic steady state. Log linearise around
+  the non stochastic steady state to get a system of linear
+  expectational difference equations and solve for the policy
+  rules. For example:
+  \begin{align*}
+    \text{log}\theta_{t+1} = \text{log}\bar{\theta} + \theta_s
+    (s_{t+1}-\bar{s}) + \theta_n (\text{log}n_t - \text{log}\bar{n}) +
+    \theta_k (\text{log}k_t - \text{log}\bar{k})
+  \end{align*}
+\Hline \\
+Appendix \ref{appendix:c} uses the equations in part 1) to derive the
+equations for the non stochastic steady state. The steady state
+equations are given by:
+
+We put these equations along with the parameter values to solve for
+the steady state using a non-linear solver. The steady state is given
+by
+\item Using the calibration in Table 3.2 to compute the IRF and the
+  ergodic moments of all the relevant variables. Please check your
+  results against figure 3.2 in the book. \\ \Hline \\
+For most of the parameters, Shimer uses the same calibration as in
+Table 3.2. However, he changes some of the parameters. He sets
+$\bar{s} = 0.0012$, $\rho = 0.4$ and $\zeta = 0.00325$. 
+Table \ref{tab:calibration} gives the values
+of the remaining parameters.
+\begin{table}[htbp!]
+\label{tab:calibration}
+\floatintro{These are the same parameters as in Shimer's book from
+  Table 3.2}
+\centering
+\begin{tabular}{lrr}
+\hline
+Parameter & Description & Values \\
+\hline
+$\beta$ & Discounting & 0.996 \\
+$\alpha$ & Share of capital & 0.33 \\
+$\tau$ & Tax rate & 0.4 \\
+$x$ & Employment exit probability & 0.034 \\
+$\gamma$ & Worker's bargaining power & 0.5 \\
+$\delta$ & Depreciation & 0.0028 \\
+\hline
+\end{tabular}
+\caption{Calibration of parameters}
+\end{table}
+\item Derive an expression for labor wedge in this economy using the
+  consumption output ratio and the hours which here is a fraction of
+  HH that are employed. Obtain a log linear expansion of the wedge
+  using the log linear policy rules. \\ \Hline \\
+\item What is the correlation of the labor wedge with output and
+  employment? You can sign it by staring at the policy rules. What is
+  the ergodic std. of the labor wedge? How does the correlations and
+  volatility compare to data. \\ \Hline \\
+\item Now extract a TFP series such that the simulate path of $y(s^t)$
+  is exactly as in the data. Start with the steady state level of
+  capital and employment. Using the policy rule for output reverse
+  engineer a shock such that detrended output matches exactly to the
+  value in the data. Now update the state variables using your policy
+  rules and keep iterating this procedure. How does the TFP series
+  extracted compare to a Solow residual in the data? \\ \Hline \\ 
+\end{enumerate}
+\newpage
+\begin{appendices}
+  \section{Transforming the variables on a balanced growth
+    path} \label{appendix:a}
+  \section{Reducing the set of equations to a pair of nonlinear
+    equations} \label{appendix:b}
+  \section{Steady state calculations} \label{appendix:c}
+\end{appendices}
+\end{document}
