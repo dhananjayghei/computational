@@ -1,0 +1,6 @@
+This directory has files written in Julia.
+
+Julia is used for computing and numerical methods.
+
+Any file in this directory will have the format
+"hw[number].jl"
