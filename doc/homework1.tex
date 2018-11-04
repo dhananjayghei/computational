@@ -81,6 +81,35 @@ The law of motion for employment is given by:
 \begin{align*}
   n(s^{t+1}) = (1-x) n(s^t) + f(\theta(s^t))(1-n(s^t))
 \end{align*}
+In order to show that there exists a Markovian solution, we first
+conjecture that the solution is given as constants $\bar{c}, \bar{k},
+\bar{w}, \bar{w}, \bar{\theta}$. Then, we
+plug in these values into the 5 equations above. If there is such an
+equilibrium, the equations
+are given by:
+\begin{align*}
+  1 &= \beta \sum \pi(s_{t+1}|s_t) e^{-\frac{s_{t+1}}{1-\alpha}}
+  \bigg(\alpha \bigg(\frac{\bar{k}}{\bar{n} -
+  \bar{\theta}(1-\bar{n})}\bigg)^{\alpha-1} + 1 - \delta\bigg)\\
+  (1-\alpha)
+  \bigg(\frac{\bar{k}}{\bar{n}-\bar{\theta}(1-\bar{n})}\bigg)^{\alpha}
+  &= \beta \mu(\bar{\theta}) \sum \pi(s_{t+1}|s_t)
+  \times \bigg((1-\alpha) \bigg(\frac{\bar{k}}{\bar n - \bar \theta
+  (1-\bar n)}\bigg)^{\alpha} \bigg(1 + \frac{1-x}{\mu(\bar \theta)}
+  \bigg) - \bar{w}\bigg)\\
+  \bar n &= (1-x)\bar n + f(\bar \theta) (1-\bar n)\\
+  \bar k e^{\frac{s_{t+1}}{1-\alpha}} &= \bar k^{\alpha} (\bar n - \bar
+  \theta (1-\bar n))^{1-\alpha} + (1-\delta) \bar k - \bar c\\
+  (1-\tau) \bar w &= (1-\phi) \gamma \bar c + \phi (1-\alpha) (1-\tau)
+  \bigg(\frac{\bar k}{\bar n - \bar \theta (1-\bar n)} \bigg)^{\alpha} (1+\bar \theta)
+\end{align*}
+Substituting out $\bar c, \bar n, \bar k$, we get an equation in
+$\bar \theta$ and $\bar w$ as:
+% Add equation
+There is an equilibrium of this form if and only if this equation can
+be satisfied in any history $s^t$. Thus, this requires that there
+exists a number $\bar s$ satisfying:
+% Add equation
 
 Finally, let the functions $\Theta$ and $C$ define the
 recruiter-employment ratio and equilibrium consumption relative to
