@@ -31,9 +31,11 @@ bcaUS$gov_pc <- (bcaUS$gov_fnl_cons_exp+bcaUS$exports-bcaUS$imports)/(bcaUS$gdp_
 # Converting it to log
 bcaUS$gov_pc_log <- log(bcaUS$gov_pc)
 
-# Not sure how to get sales tax data
+# Interpolating sales taxes
+taxpop <- splinefun(x=pop$year, y=pop$tax_pct_gdp, method="fmm", ties="mean")
+tax.quarterly <- taxpop(seq(1980, 2014.75, .25))
 
-
+bcaUS$tax_pc_gdp <- tax.quarterly
 
 
 
