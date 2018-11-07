@@ -7,16 +7,19 @@
 \usepackage{appendix}
 \usepackage[utf8]{inputenc}
 \usepackage{hyperref}
-\floatstyle{ruled}
-\restylefloat{table}
-\restylefloat{figure}
+\floatstyle{ruled} \restylefloat{table} \restylefloat{figure}
+
 \newcommand{\floatintro}[1]{
+  
   \vspace*{0.1in}
+  
   {\footnotesize
+
     #1
-    }
-  \vspace*{0.1in}
-}
+    
+  }
+  
+  \vspace*{0.1in} }
 \newcommand{\Hline}{\noindent\rule{17cm}{0.5pt}}
 \title{Homework 1 : Computational Economics \\
 Search Models}
@@ -134,10 +137,43 @@ functional equations are given as:
 Appendix \ref{appendix:c} uses the equations in part 1) to derive the
 equations for the non stochastic steady state. The steady state
 equations are given by:
+\begin{align*}
+  1 &= \beta e^{-\frac{\bar{s}}{1-\alpha}}
+  \bigg(\alpha \bigg(\frac{\bar{k}}{\bar{n} -
+  \bar{\theta}(1-\bar{n})}\bigg)^{\alpha-1} + 1 - \delta\bigg)\\
+  (1-\alpha)
+  \bigg(\frac{\bar{k}}{\bar{n}-\bar{\theta}(1-\bar{n})}\bigg)^{\alpha}
+  &= \beta \mu(\bar{\theta}) \bigg((1-\alpha)
+    \bigg(\frac{\bar{k}}{\bar n - \bar \theta (1-\bar
+    n)}\bigg)^{\alpha} \bigg(1 + \frac{1-x}{\mu(\bar \theta)} \bigg) -
+    \bar{w}\bigg)\\
+    \bar n &= (1-x)\bar n + f(\bar \theta) (1-\bar n)\\
+  \bar k e^{\frac{\bar{s}}{1-\alpha}} &= \bar k^{\alpha} (\bar n - \bar
+  \theta (1-\bar n))^{1-\alpha} + (1-\delta) \bar k - \bar c\\
+  (1-\tau) \bar w &= (1-\phi) \gamma \bar c + \phi (1-\alpha) (1-\tau)
+  \bigg(\frac{\bar k}{\bar n - \bar \theta (1-\bar n)} \bigg)^{\alpha}
+                    (1+\bar \theta) 
+\end{align*}
 
 We put these equations along with the parameter values to solve for
 the steady state using a non-linear solver. The steady state is given
-by
+by: $\bar n=0.949$, $\bar k=218.239$, $\bar c=4.695$, $\bar w=4.016$,
+$\bar \theta = 0.077$.\\
+In order to log-linearise the equations, we convert all the variables
+into log deviations from steady state and then use a first order
+Taylor approximation of the equation around 0 to get the
+coefficients. The log linearised equations are given by:
+\begin{align*}
+  \log k_{t+1} - \log \bar k &= -.610(s_t-\bar s) + .0186(\log n_t - \log
+  \bar n) + 0.991(\log k_t - \log \bar k)\\
+  \log n_{t+1} - \log \bar n &= 0.026(s_t-\bar s) + 0.312(\log n_t - \log
+  \bar n) -0.047(\log k_t - \log \bar k)\\
+  \log \tilde y_{t} - \log \bar y &= -0.003(s_t-\bar s) + 0.726(\log n_t - \log
+  \bar n) + 0.337(\log k_t - \log \bar k)\\
+  \log \tilde w_{t} - \log \bar w &= -0.236(s_t-\bar s) - 0.205(\log n_t - \log
+  \bar n) + 0.345(\log k_t - \log \bar k)
+\end{align*}
+where the bar variables are the steady state values of these variables.
 \item Using the calibration in Table 3.2 to compute the IRF and the
   ergodic moments of all the relevant variables. Please check your
   results against figure 3.2 in the book. \\ \Hline \\
@@ -148,31 +184,85 @@ Table \ref{tab:calibration} gives the values
 of the remaining parameters.
 \begin{table}[htbp!]
 \label{tab:calibration}
+\caption{Calibration of parameters}
 \floatintro{These are the same parameters as in Shimer's book from
   Table 3.2}
 \centering
 \begin{tabular}{lrr}
-\hline
-Parameter & Description & Values \\
-\hline
-$\beta$ & Discounting & 0.996 \\
-$\alpha$ & Share of capital & 0.33 \\
-$\tau$ & Tax rate & 0.4 \\
-$x$ & Employment exit probability & 0.034 \\
-$\gamma$ & Worker's bargaining power & 0.5 \\
-$\delta$ & Depreciation & 0.0028 \\
-\hline
+  \hline
+  Parameter & Description & Values \\
+  \hline
+  $\beta$ & Discounting & 0.996 \\
+  $\alpha$ & Share of capital & 0.33 \\
+  $\tau$ & Tax rate & 0.4 \\
+  $x$ & Employment exit probability & 0.034 \\
+  $\phi$ & Worker's bargaining power & 0.5 \\
+  $\delta$ & Depreciation & 0.0028 \\
+  \hline
 \end{tabular}
-\caption{Calibration of parameters}
 \end{table}
+The log linear solutions for the relevant variables can be calculated
+directly once we have the solutions for the main variables as given in
+the previous part. As an example, the coefficients for the log linear
+solution of consumption-output ratio $c/y$ is directly given by
+subtracting the coefficients of output from that of consumption. We
+can do that same exercise for the labor share of income $wn/y$. \\
+Table \ref{tab:correlations} shows the ergodic moment of all the
+relevant variables. In particular, one can compare this table directly
+with Table 3.5 from Shimer's book. Note that, the relative standard
+deviations and the correlations are close to the values in the book.
+
+\begin{table}[htbp!]
+  \floatintro{The table shows the co-movement of variables in an
+    infinite sample. The table closely resembles to the one Shimer has
+    in his book. The corresponding table to look at is Table 3.5 on Page
+    101. The variables have similar ergodic moments as in the book.}
+  \caption{Model with capital, stochastic trend. Co-movements of
+    variables in infinite samples.}
+  \label{tab:correlations}
+  \centering
+  \resizebox{\textwidth}{!}{
+    \begin{tabular}{lr|rrrrrrrrr}
+      &  & $\tilde{y}$ & $\tilde{c}$ & $\theta$ & $\tilde{k}$ & $n$ &
+                                                                      $wn/y$ & $c/y$ & $\hat{\tau}$ & $s$ \\ \hline
+      & Relative sd. & 1 & 2.09 & 9.632 & 3.475 & 0.239 & 0.129 & 1.1
+                                                                                     & 1.291 & 0.541 \\ \hline
+      & $\tilde{y}$ & 1 & 0.99468 & -0.99657 & 0.99997 & -0.99874 & 0.01101 & 0.98064 & -0.97011 & -0.06679 \\
+      & $\tilde{c}$ & - & 1 & -0.98281 & 0.99514 & -0.99583 & 0.11375 & 0.9956 & -0.98992 & 0.03617 \\
+      Correlations & $\theta$ & - & - & 1 & -0.99621 & 0.99391 & 0.07163 & -0.96122 & 0.94676 & 0.14895 \\
+      & $\tilde{k}$ & - & - & - & 1 & -0.99911 & 0.0154 & 0.98156 & -0.97117 & -0.06238 \\
+      & $n$ & - & - & - & - & 1 & -0.03118 & -0.98398 & 0.974 & 0.04636 \\
+      & $wn/y$ & - & - & - & - & - & 1 & 0.20612 & -0.25329 & 0.99696 \\
+      & $c/y$ & - & - & - & - & - & - & 1 & -0.99879 & 0.12946 \\
+      & $\hat{\tau}$ & - & - & - & - & - & - & - & 1 & -0.17731 \\
+      & $s$ & - & - & - & - & - & - & - & - & 1 \\ \hline
+    \end{tabular}}
+\end{table}
+\textbf{TODO:} Impulse response functions. The impulse response graphs
+do not match the figures from Shimer's book.
 \item Derive an expression for labor wedge in this economy using the
   consumption output ratio and the hours which here is a fraction of
   HH that are employed. Obtain a log linear expansion of the wedge
   using the log linear policy rules. \\ \Hline \\
+The expression for labor wedge is given by:
+\begin{align*}
+  \hat{\tau}(s^t) = 1 - \frac{\hat \gamma}{1-\alpha}(c(s^t)/y(s^t))n(s^t)
+\end{align*}
+Considering the fact that the true tax factor is 0.4,the disutility of
+work is $\hat \gamma = .513$. Next, we log linearise the equation for
+wedge and the policy rule for labor wedge is given by:
+\begin{align*}
+  \log \hat \tau_t = \log .4 -0.572(s-\bar s) -0.429 (\log n_t - \log \bar n) -0.396
+  (\log k_t - \log \bar k)
+\end{align*}
 \item What is the correlation of the labor wedge with output and
   employment? You can sign it by staring at the policy rules. What is
   the ergodic std. of the labor wedge? How does the correlations and
   volatility compare to data. \\ \Hline \\
+We can look at Table \ref{tab:correlations} and see that the
+correlation of labor wedge with output is -0.9701 and the correlation with
+employment is 0.974. The relative standard deviation of labor wedge in an
+infinite sample is equal to 1.29. The labor wedge is countercyclical.
 \item Now extract a TFP series such that the simulate path of $y(s^t)$
   is exactly as in the data. Start with the steady state level of
   capital and employment. Using the policy rule for output reverse
