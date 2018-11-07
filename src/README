@@ -1,6 +1,15 @@
-This directory has files written in Julia.
+This directory has files written in Julia and R.
 
 Julia is used for computing and numerical methods.
+R is used for data manipulation.
 
 Any file in this directory will have the format
-"hw[number].jl"
+"hw[number].jl/R"
+
+hw1.jl - This is the Julia file that replicates the search model with
+stochastic trend.
+
+hw2_bca_data.R - This file reads in the OECD data for US and
+constructs the required variables for BCA exercise.
+
+hw2.jl - This is the Julia file that replicates the BCA exercise.

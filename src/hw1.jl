@@ -11,6 +11,9 @@ using NLsolve
 using SymPy
 using LinearAlgebra
 using QuantEcon
+using Plots
+using DataFrames
+using CSV
 #------------------------------ Setting up the parameters
 β, s̄, τ, x, ϕ, γ, α, δ, ρ, ζ, η, μss = .996, .0012, .4, .034, .5, .471, .33, .0028, .4, .00325, 1/2, 2.32
 
@@ -28,12 +31,12 @@ kss, nss, css, wss, θss = convert(AbstractFloat, sol[1]), convert(AbstractFloat
 # TODO
 # Defining the functionals $C$ and $\Theta$
 # Functional C
-function CFun(s,n,k, Css, Cs, Cn, Ck)
+function CFun(s,n,k,Css,Cs,Cn,Ck)
     CFun = exp(log(Css)+ Cs*(s-s̄)+ Cn*(log(n)-log(nss)) + Ck * (log(k) - log(kss)))
     return CFun
 end
 # Functional θ
-function ΘFun(s,n,k, θs, θn, θk)
+function ThetaFun(s,n,k,θs,θn,θk)
     ΘFun = exp(log(θss) + θs*(s-s̄) + θn*(log(n) - log(nss)) + θk*(log(k)-log(kss)))
     return ΘFun
 end
@@ -43,16 +46,62 @@ function SFun(s)
     return s1
 end
 
+# Deriving the forward variables
+function Prime(x)
+    s,n,k,c,θ = x
+    sPrime = SFun(s)
+    kPrime = exp(-sPrime/(1-α))* ((k)^α*(n-θ*(1-n))^(1-α) + (1-δ)*k-c)
+    nPrime = (1-x)*n+μss*θ^(η)*(1-n)
+    cPrime = CFun(sPrime, nPrime, kPrime, css, Cs, Cn, Ck)
+    θPrime = θFun(sPrime, nPrime, kPrime, θss, θs, θn, θk)
+    sPrime, nPrime, kPrime, cPrime, θPrime = y
+    return y
+end
+
+# Writing the two equations in terms of functionals
+function equation1(x)
+ s,n,k,Cs,Cn,Ck,θs,θn,θk = x
+ c = CFun(s, n, k, css, Cs, Cn, Ck)
+ θ = ThetaFun(s, n, k, θss, θs, θn, θk)
+ sPrime = SFun(s)
+ kPrime = exp(-sPrime/(1-α))* ((k)^α*(n-θ*(1-n))^(1-α) + (1-δ)*k-c)
+ nPrime = (1-x)*n+μss*θ^(η)*(1-n)
+ cPrime = CFun(sPrime, nPrime, kPrime, css, Cs, Cn, Ck)
+ θPrime = ThetaFun(sPrime, nPrime, kPrime, θss, θs, θn, θk)
+ eq1 = 1 - β*(c/cPrime)*exp(-sPrime/(1-α))*(α*(kPrime/(nPrime-(1-θPrime)*nPrime))^(α-1)+(1-δ))
+ return eq1
+end
+
+function equation2(x)
+    s,n,k,Cs,Cn,Ck,Θs,Θn,Θk = x
+    c=CFun(s,n,k,css,Cs,Cn,Ck)
+    θ=ThetaFun(s,n,k,Θss,Θs,Θn,Θk)
+    sPrime = SFun(s)
+    kPrime = exp(-sPrime/(1-α))* ((k)^α*(n-θ*(1-n))^(1-α) + (1-δ)*k-c)
+    nPrime = (1-x)*n+μss*θ^(η)*(1-n)
+    cPrime = CFun(sPrime, nPrime, kPrime, css, Cs, Cn, Ck)
+    θPrime = ThetaFun(sPrime, nPrime, kPrime, θss, θs, θn, θk)
+    eq2 = -(1-α)*(k/(n-θ*(1-n)))^α + β* μss*(θ)^(η) * (c/cPrime) *(-(1-φ)*γ*cPrime/(1-τ) + (1-α) *(kPrime/(nPrime-θPrime*(1-nPrime)))^α *((1-x)/μss*θPrime^(η)+1-φ-φ*θPrime))
+    return eq2
+end
+
+function logLinear!(eq, coeffs::Vector)
+    Cs,Cn,Ck,θs,θn,θk = coeffs
+    eq[1:3] = ForwardDiff.gradient(equation1, [s̄, nss, kss, Cs, Cn, Ck, θs, θn, θk])[1:3]
+    eq[4:6] = ForwardDiff.gradient(equation2, [s̄, nss, kss, Cs, Cn, Ck, θs, θn, θk])[1:3]
+    return eq
+end
+
+coeffs = nlsolve(logLinear!, [.014,.929,.7764,7.38,.754,.962], ftol = :1.0e-9, method = :trust_region, autoscale = true)
 # Take the log linearised solutions directly from Shimer's book
 # and proceed
 
 # Defining the A and D matrix as in Shimer's book
 A = [ρ 0 0; 0.026 0.312 -0.047; -0.605 0.019 0.991]
 D = [ζ, 0, 0]
-Iden = [1 0 0; 0 1 0; 0 0 1]
-
 # Solving the discrete Lyapunov equation
-tol = 1e-6
+# Sensitive to the tolerance values
+tol = 1e-15
 er = 1+tol
 # Initial guess
 Σ = D*D'
@@ -78,7 +127,6 @@ Ã = [1.548 -0.48 -2.779; 0.381 0.014 0.603]
 θCoeff = Ã[1,:]
 cCoeff = Ã[2,:]
 
-B = [ρ 0 0; 1.548 -0.480 -2.779; 0.381 0.014 0.603]
 # Law of motion for employment
 function employ(f)
     n,θ = f
@@ -90,7 +138,7 @@ employ([0,0])
 # Find the Jacobian
 employJac = ForwardDiff.gradient(employ, [0,0])
 # Need to get the coefficients for the log linearised formula for n_t+1
-nCoeff = employJac[2]*B[2,:] + [0, employJac[1], 0]
+nPrimeCoeff = employJac[2]*θCoeff + [0, employJac[1], 0]
 # They are the same as in Shimer's book Page 101
 
 # Next, we log linearise the law of motion for capital
@@ -106,7 +154,7 @@ kPrime([0,0,0,0,0])
 kPrimeJac = ForwardDiff.gradient(kPrime, [0,0,0,0,0])
 # Finding the coefficients for Capital tomorrow in terms of states (s,n,k)
 # They are the same as in Shimer's book Page 101
-kPrimeCoeff = [-(1-ρ)+kPrimeJac[1], kPrimeJac[2], kPrimeJac[3]] + kPrimeJac[4]*B[2,:] + kPrimeJac[5]*B[3,:]
+kPrimeCoeff = [-(1-ρ)+kPrimeJac[1], kPrimeJac[2], kPrimeJac[3]] + kPrimeJac[4]*θCoeff + kPrimeJac[5]*cCoeff
 
 # Next, we log linearise the output
 # Log linearising the output
@@ -121,8 +169,8 @@ gdp([0,0,0,0])
 # Find the Jacobian
 gdpJac = ForwardDiff.gradient(gdp, [0,0,0,0])
 # Finding the coefficients for output in terms of states (s,n,k)
-gdpCoeff = gdpJac[1:3] + gdpJac[4,]*Ã[1,:]
-
+gdpCoeff = gdpJac[1:3] + gdpJac[4,]*θCoeff
+# yCoeff = gdpCoeff + [α/(1-α), 0, 0]
 # Consumption - Output ratio
 cyCoeff = cCoeff - gdpCoeff
 # Log linearising wages
@@ -138,6 +186,7 @@ wagesJac = ForwardDiff.gradient(wages, [0,0,0,0])
 # Finding the coefficients for wages in terms of states (s,n,k)
 wageCoeff = [0, wagesJac[1], wagesJac[2]]+ wagesJac[3]*θCoeff + wagesJac[4]*cCoeff
 # Finding the coefficients for wn/y (labor share) in terms of state (s,n,k)
+nCoeff = [0, 1, 0]
 wnyCoeff = wageCoeff + nCoeff - gdpCoeff
 # ΣÃ = Ã*Σ*Ã'
 # # Calculating the correlation between \theta and c
@@ -157,20 +206,29 @@ wedge([0,0,0])
 wedgeJac = ForwardDiff.gradient(wedge, [0,0,0])
 wedgeCoeff = [0, wedgeJac[1], 0] + wedgeJac[2]*cCoeff + wedgeJac[3]*gdpCoeff
 # Stochastic term
-sCoeff = [ρ, 0, 0]
+sCoeff = [1, 0, 0]
+kCoeff = [0, 0, 1]
+#------------------------------ Generating Table 3.5 from Shimer's book
 # Finding the moments for all relevant variables
 # y,c, θ, k, n, wn/y, c/y, ̂τ, s
 # Setting up a big Ã matrix for correlations
-Moments = [gdpCoeff'; cCoeff'; θCoeff'; kPrimeCoeff'; nCoeff'; wnyCoeff'; cyCoeff'; wedgeCoeff'; sCoeff']
+Moments = [gdpCoeff'; cCoeff'; θCoeff'; kCoeff'; nCoeff'; wnyCoeff'; cyCoeff'; wedgeCoeff'; sCoeff']
 # Calculating the moments of all the relevant variables
 ΣMom= Moments*Σ*Moments'
 # Relative standard deviation
-sqrt.(diag(ΣMom)/ΣMom[1])
-ΣMom[1,8]/sqrt(ΣMom[8,8]*ΣMom[1,1])
+relSD = round.(sqrt.(diag(ΣMom)/ΣMom[1]), digits=3)
 # Correlations
-using DataFrames
-
-#------------------------------ Generating Table 3.5 from Shimer's book
+correl = zeros(9,9)
+for i in 1:9
+    for j in 1:9
+        correl[i,j] = round(ΣMom[i,j]/sqrt(ΣMom[i,i]*ΣMom[j,j]), digits=5)
+    end
+end
+correl = UpperTriangular(correl)
+tab = vcat(relSD', correl)
+tab = DataFrame(tab)
+# Storing the table for ergodic moments
+CSV.write("../computational/data/ergodicMoments.csv", tab)
 
 #------------------------------ Impulse response functions
 # Setting up the matrix for the Blanchard-Kahn conditions
@@ -178,3 +236,26 @@ using DataFrames
 # G = [ρ 0 0 0 0; nCoeff' 0 0; kPrimeCoeff' 0 0; 0 0 0 0 0; 0 0 0 0 0]
 # F = schur(D, G)
 # eigen(pinv(D)*G)
+# kPrimeCoeff[1] = -.605
+M = [ρ 0 0; nPrimeCoeff'; kPrimeCoeff']
+Shock = [ζ/(sqrt(1-ρ^2)) 0 0]'
+# eigen(M)
+X = zeros(3, 120)
+X[:,1] = M*[0 0 0]' + Shock
+
+for i in 2:120
+    X[:,i] = M*X[:,(i-1)]
+end
+
+Y = zeros(5,120)
+for i in 2:120
+    Y[:,i] = [gdpCoeff'; cCoeff'; θCoeff'; wageCoeff'; wedgeCoeff']*X[:,(i-1)]
+end
+
+Plots.plot(1:120, Y[5,:]*100)
+Plots.plot(1:120, (exp.(Y[5,:]).-1)*100)
+
+Plots.plot(1:120, (X[1,:]*100))
+Plots.plot(1:120, (X[2,:]*100))
+Plots.plot(1:120, (X[3,:]*100))
+#------------------------------ Data Plotting
