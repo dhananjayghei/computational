@@ -9,7 +9,8 @@ Any file in this directory will have the format
 hw1.jl - This is the Julia file that replicates the search model with
 stochastic trend.
 
-hw2_bca_data.R - This file reads in the OECD data for US and
-constructs the required variables for BCA exercise.
+hw2_bca_data.R - This file reads in the NIPA/FRED/Flow of funds data for US and
+constructs the required variables for BCA exercise. The output is stored
+in ../data/bcaFinal.csv
 
 hw2.jl - This is the Julia file that replicates the BCA exercise.
