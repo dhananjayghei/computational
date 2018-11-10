@@ -1,45 +1,38 @@
-# Reading population data
-pop <- read.csv("../data/bca_popUS.csv")
-pop$total_pop <- pop$total_pop*1000
-pop$pop_labor_force <- pop$pop_labor_force*1000
-cubicpop <- splinefun(x=pop$year, y=pop$pop_labor_force, method="fmm",
-                      ties="mean")
-pop.quarterly <- cubicpop(seq(1980, 2014.75, .25))
+library(zoo)
+# Reading the BCA data from FRED
+dat <- read.csv("../data/bca_fredUS.csv")
+# Converting the dates into quarters
+dat$quarter <- as.yearqtr(as.Date(as.character(dat$quarter),
+                                  format="%Y-%m-%d"))
+# Constructing the variables
+# Sales tax
+dat$sales_tax_bn <- dat$fed_exc_tax_bn+dat$state_sales_tax_bn+dat$state_other_tax_bn
+dat$real_sales_tax <- dat$sales_tax_bn/(dat$defl_pce/100)
+# Real services from consumer durables
+dat$real_serv_dur <- dat$pce_dur_bn*1.04/(dat$defl_pce_dur/100)
+# Depreciation from consumer durables
+dat$real_dep_dur <- dat$pce_dur_bn*.75/(dat$defl_pce_dur/100)
+# Real Output
+# Real GDP - Sales tax deflated by PCE deflator + Services from consumer durables (return =4%) deflated by PCE + Depreciation from consumer durables deflated by PCE
+dat$real_output <- dat$gdp_bn-dat$real_sales_tax+dat$real_serv_dur+dat$real_dep_dur
+# Real Output per capita (Adjusting for billions)
+dat$real_output_pc <- dat$real_output*1e9/dat$non_inst_pop
 
-# Average population growth rate for US
-# should match .98 as in Table 2 from the Technical Appendix
-pop.Avg <- ((211545900/150227400)^(1/35)-1)*100
+# Investment
+# Real GPDI + Real Government investment + Real PCE on durables - Sales tax deflated by PCE x Share of durables in PCE 
+dat$inv <- dat$gpdi_bn+(dat$gvt_ginv_nom_bn*100/dat$defl_gov)+dat$pce_dur_bn-(dat$real_sales_tax*dat$pce_dur_bn/dat$pce_bn)
+# Rean investment per capital (Adjusting for billions)
+dat$real_inv_pc <- dat$inv*1e9/dat$non_inst_pop
 
-# Reading OECD data for US
-bcaUS <- read.csv("../data/bca_oecdUS.csv")
-bcaUS$pop_qtrly <- pop.quarterly
+# Real Government per capita (Adjusting for billions) 
+# Real government consumption expenditure + Real net exports
+dat$real_gov_pc <- ((dat$gvt_cons_exp_nom_bn*100/dat$defl_gov)+dat$exports_bn-dat$imports_bn)*1e9/dat$non_inst_pop
 
-# Per-capita hours
-bcaUS$hours_pc <- bcaUS$tot_emp*bcaUS$tot_hours/(bcaUS$pop_qtrly)
-bcaUS$hours_pc_log <- log(bcaUS$hours_pc)
-# Per-capita investment
-## # Converting GCF to billions USD
-## bcaUS$ct_gcfBN <- bcaUS$ct_gcf/1e9
-# Converting Durable goods expenditure to billions USD
-bcaUS$ct_dur_goodsBN <- bcaUS$ct_dur_goods*1e9
-# Calculating per-capita investment
-# (GCF+Durables)/(Deflator*Population)
-bcaUS$inv_pc <- (bcaUS$ct_gcf+bcaUS$ct_dur_goodsBN)/(bcaUS$gdp_deflator*bcaUS$pop_qtrly)
-bcaUS$inv_pc_log <- log(bcaUS$inv_pc)
-# Per-capita government expenditure
-bcaUS$gov_pc <- (bcaUS$gov_fnl_cons_exp+bcaUS$exports-bcaUS$imports)/(bcaUS$gdp_deflator*bcaUS$pop_qtrly)
-# Converting it to log
-bcaUS$gov_pc_log <- log(bcaUS$gov_pc)
+# Real labor input
+# Total hours/Non-institutional population
+dat$real_labor_inp <- dat$hours_worked/dat$non_inst_pop
 
-# Interpolating sales taxes
-taxpop <- splinefun(x=pop$year, y=pop$tax_pct_gdp, method="fmm", ties="mean")
-tax.quarterly <- taxpop(seq(1980, 2014.75, .25))
+# Saving the data set
+bca <- dat[, c("quarter", "real_output_pc", "real_inv_pc", "real_gov_pc", "real_labor_inp")]
 
-bcaUS$tax_pc_gdp <- tax.quarterly
-
-
-
-
-
-
-
+write.csv(bca, "../data/bcaFinal.csv")
