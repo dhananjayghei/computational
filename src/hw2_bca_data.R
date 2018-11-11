@@ -34,5 +34,7 @@ dat$real_labor_inp <- dat$hours_worked/dat$non_inst_pop
 
 # Saving the data set
 bca <- dat[, c("quarter", "real_output_pc", "real_inv_pc", "real_gov_pc", "real_labor_inp")]
-
+# Converting to logarithms
+bca[, 2:5] <- apply(bca[,2:5], 2, log)
+# Storing the data
 write.csv(bca, "../data/bcaFinal.csv")
